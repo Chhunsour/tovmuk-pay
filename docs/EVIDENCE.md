@@ -20,3 +20,14 @@ The 2,000 KHR transaction was accepted and found by the merchant API, but no pay
 - `01-1-khr-evidence.md`, `02-2000-khr-evidence.md`, `03-callbacks.md`
 
 The account number and demo sender name are redacted in the exported database records. The API key and RSA private key are not included in Git or the evidence package.
+
+## CNAME retest on 28 September 2026
+
+After `seng.khmerfp.com` was added to the same Vercel project and `APP_BASE_URL` was set to that HTTPS origin, the two sandbox amounts were retried through the CNAME:
+
+| Amount | Transaction ID | ABA Generate QR | ABA Check transaction | Stored result |
+| --- | --- | --- | --- | --- |
+| 1 KHR | `TP2609280630083GYV35` | HTTP 400, code `04`, “The given data was invalid.” No QR issued. | Later check returned HTTP 200, code `6`, “tran_id not found.” | `failed`; original rejection code `04` retained |
+| 2,000 KHR | `TP26092806302567LLOB` | HTTP 200, code `0`; ABA returned a QR image. | HTTP 200, code `00`, `PENDING`, original and total amount 2,000 KHR. | `pending` at capture time |
+
+The Vercel request logs identify `seng.khmerfp.com` as the serving domain. These results show that the CNAME works over HTTPS and that ABA accepted the 2,000 KHR QR request. They do not show payer authorization, a completed payment, or a callback. The 1 KHR response does not specify which field ABA considered invalid. Evidence: [redacted API events](evidence/cname-retest/aba-api-events-redacted.json), [redacted database records](evidence/cname-retest/redacted-db-records.json), [1 KHR status](evidence/cname-retest/1-khr-rejected.png), and [2,000 KHR status](evidence/cname-retest/2000-khr-pending.png).

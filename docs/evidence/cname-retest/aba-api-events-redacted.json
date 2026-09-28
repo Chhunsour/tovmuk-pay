@@ -1,0 +1,142 @@
+[
+  {
+    "at": "2026-09-28T06:30:09.103Z",
+    "event": "payway.qr.request",
+    "tran_id": "TP2609280630083GYV35",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:09.189Z",
+    "event": "payway.qr.response",
+    "tran_id": "TP2609280630083GYV35",
+    "http_status": 400,
+    "code": "04",
+    "message": "The given data was invalid.",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:25.840Z",
+    "event": "payway.qr.request",
+    "tran_id": "TP26092806302567LLOB",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:26.176Z",
+    "event": "payway.qr.response",
+    "tran_id": "TP26092806302567LLOB",
+    "http_status": 200,
+    "code": "0",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:45.257Z",
+    "event": "payway.check.request",
+    "tran_id": "TP26092806302567LLOB",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:45.341Z",
+    "event": "payway.check.response",
+    "tran_id": "TP26092806302567LLOB",
+    "http_status": 200,
+    "result": "found",
+    "request_domain": "seng.khmerfp.com",
+    "aba_status": {
+      "code": "00",
+      "message": "Success!"
+    },
+    "aba_data": {
+      "payment_status": "PENDING",
+      "original_amount": 2000,
+      "total_amount": 2000
+    }
+  },
+  {
+    "at": "2026-09-28T06:30:50.373Z",
+    "event": "payway.check.request",
+    "tran_id": "TP26092806302567LLOB",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:50.472Z",
+    "event": "payway.check.response",
+    "tran_id": "TP26092806302567LLOB",
+    "http_status": 200,
+    "result": "found",
+    "request_domain": "seng.khmerfp.com",
+    "aba_status": {
+      "code": "00",
+      "message": "Success!"
+    },
+    "aba_data": {
+      "payment_status": "PENDING",
+      "original_amount": 2000,
+      "total_amount": 2000
+    }
+  },
+  {
+    "at": "2026-09-28T06:30:58.508Z",
+    "event": "payway.check.request",
+    "tran_id": "TP26092806302567LLOB",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:30:58.650Z",
+    "event": "payway.check.response",
+    "tran_id": "TP26092806302567LLOB",
+    "http_status": 200,
+    "result": "found",
+    "request_domain": "seng.khmerfp.com",
+    "aba_status": {
+      "code": "00",
+      "message": "Success!"
+    },
+    "aba_data": {
+      "payment_status": "PENDING",
+      "original_amount": 2000,
+      "total_amount": 2000
+    }
+  },
+  {
+    "at": "2026-09-28T06:31:01.695Z",
+    "event": "payway.check.request",
+    "tran_id": "TP2609280630083GYV35",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:31:01.775Z",
+    "event": "payway.check.response",
+    "tran_id": "TP2609280630083GYV35",
+    "http_status": 200,
+    "result": "not_found",
+    "request_domain": "seng.khmerfp.com",
+    "aba_status": {
+      "code": 6,
+      "message": "tran_id not found"
+    },
+    "aba_data": {}
+  },
+  {
+    "at": "2026-09-28T06:31:35.404Z",
+    "event": "payway.check.request",
+    "tran_id": "TP26092806302567LLOB",
+    "request_domain": "seng.khmerfp.com"
+  },
+  {
+    "at": "2026-09-28T06:31:35.485Z",
+    "event": "payway.check.response",
+    "tran_id": "TP26092806302567LLOB",
+    "http_status": 200,
+    "result": "found",
+    "request_domain": "seng.khmerfp.com",
+    "aba_status": {
+      "code": "00",
+      "message": "Success!"
+    },
+    "aba_data": {
+      "payment_status": "PENDING",
+      "original_amount": 2000,
+      "total_amount": 2000
+    }
+  }
+]

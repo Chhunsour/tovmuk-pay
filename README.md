@@ -12,9 +12,9 @@ It validates the payment server-side, creates a unique transaction, sends a sign
 
 ## Live Application
 
-**URL:** https://pay.tovmuksolution.com (sandbox configuration)
+**URL:** https://seng.khmerfp.com (sandbox configuration)
 
-I used my own domain instead of `khmerfp.com`.
+`seng.khmerfp.com` is a CNAME to `pay.tovmuksolution.com`, which remains an alias for the same Vercel deployment. The `APP_BASE_URL` production setting uses the CNAME origin for PayWay sandbox requests.
 
 ## Tech Stack
 
@@ -62,7 +62,7 @@ Install Node 24 and pnpm, then run `pnpm install`. Copy `.env.example` to an ign
 
 ## Evidence and current limits
 
-See [docs/EVIDENCE.md](docs/EVIDENCE.md) and the separate submission evidence package for screenshots, transaction IDs, API responses, and redacted database records. On 28 September 2026, a 1 KHR Generate QR request failed with HTTP 400/code `04` (“The given data was invalid”); a 2,000 KHR request returned an ABA QR and a `PENDING` transaction. No approved payer-app payment was observed. ABA's written domain-whitelist confirmation has not been received.
+See [docs/EVIDENCE.md](docs/EVIDENCE.md) and the separate submission evidence package for screenshots, transaction IDs, API responses, and redacted database records. On 28 September 2026, both the original domain and the new CNAME were tested: 1 KHR Generate QR requests failed with HTTP 400/code `04` (“The given data was invalid”); 2,000 KHR requests returned ABA QRs and `PENDING` transactions. No approved payer-app payment was observed. ABA's written domain-whitelist confirmation has not been received.
 
 ## Required environment variables
 
