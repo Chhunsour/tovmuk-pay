@@ -1,60 +1,22 @@
-# Test transaction evidence
+# ABA PayWay sandbox evidence
 
-Local ABA sandbox run on 27 September 2026, with no custom callback:
+Live demo domain: **https://pay.tovmuksolution.com/**. These attempts were made on 28 September 2026 through the deployed site, using ABA's sandbox `generate-qr` endpoint and `Check transaction` API. The QR request omitted `callback_url`; no callback was received for either attempt. The separate submission evidence package contains the screenshots, redacted database records, and selected redacted API log events.
 
-| Amount | Purchase result | App result |
-| --- | --- | --- |
-| 1 KHR | HTTP 403, code 3: Invalid Transaction Amount | Failed; transaction ID retained for review |
-| 2,000 KHR | HTTP 200, code 00: QR returned | Transaction `TP260927155156Q2VR3U` cancelled after the payment window expired without a payer scan |
-| 2,000 KHR | Purchase API returned QR and ABA Mobile deep link | The ABA sandbox app reported “Invalid QR” for transaction `TP260927161430IHU51S` |
-| 2,000 KHR | Generate QR API returned ABA KHQR (`abapay_khqr`) | Transaction `TP260927163130T2T9T5` generated successfully; payer result not confirmed |
-| 2,000 KHR | Generate QR API returned ABA PAY (`abapay`) | ABA sandbox app reported “transition not found” for `TP2609271634479DTKU5`; PayWay Check transaction returned HTTP 200, code 00, `PENDING`, amount 2,000 KHR |
+| Amount | Transaction ID | ABA Generate QR | ABA Check transaction | Stored result |
+| --- | --- | --- | --- | --- |
+| 1 KHR | `TP260928013317288BLB` | HTTP 400, code `04`, “The given data was invalid.” No QR issued. | HTTP 200, code `6`, “tran_id not found.” | `failed` |
+| 2,000 KHR | `TP260928013522T28IQQ` | HTTP 200, code `0`; ABA returned a KHQR PNG. | HTTP 200, code `00`, `PENDING`, original and total amount 2,000 KHR. | `pending` at capture time |
 
-The app checks status with PayWay's Check transaction API. No approved sandbox payment has been observed. ABA's sandbox payer app needs to recognize the merchant transaction before this can be completed.
+The 1 KHR response does not identify which field was invalid, so the exact rejection reason is unconfirmed. The stored row's `payway_code` became `6` after a later status check; the original QR rejection code `04` is in the saved API events. This is a record-keeping improvement to make before production use.
 
-Live-domain check on 28 September 2026: `https://pay.tovmuksolution.com/` generated ABA's `abapay_khqr` PNG for `TP260928011904WVU5M1` (2,000 KHR). The transfer page then showed PayWay status `PENDING (2)` for that transaction. Payer-app authorization has not yet been observed.
+The 2,000 KHR transaction was accepted and found by the merchant API, but no payer-app authorization or `APPROVED` result was observed. A screenshot of an ABA-issued QR is evidence of generation, not payment completion. ABA must confirm the payer sandbox setup if its app cannot find the transaction. The QR expires after the configured payment window, so generate a new one for a later phone scan.
 
-## Public-domain capture checklist
+## Evidence files supplied separately
 
-Transfers started from https://pay.tovmuksolution.com after ABA confirms the domain whitelist:
+- `screenshots/1-khr-form.png`, `screenshots/1-khr-status.png`
+- `screenshots/2000-khr-form.png`, `screenshots/2000-khr-aba-qr.png`, `screenshots/2000-khr-status.png`
+- `records/1-khr-db-redacted.json`, `records/2000-khr-db-redacted.json`
+- `records/1-khr-api-events.json`, `records/2000-khr-api-events.json`
+- `01-1-khr-evidence.md`, `02-2000-khr-evidence.md`, `03-callbacks.md`
 
-| # | Amount | Transaction ID | Result |
-| --- | --- | --- | --- |
-| 1 | 1 KHR | | |
-| 2 | 2,000 KHR | | |
-
-## Capture checklist, per transaction
-
-1. **Form filled in, before submitting.** Screenshot the Send page with the three fields filled in, or the *Confirm transfer* dialog.
-2. **Transaction ID.** Shown in the dialog after *Confirm*, on the transfer details page (with a copy button), and in the *Last transfer* bar on the Send page.
-3. **PayWay checkout page.** Screenshot it before paying.
-4. **Our result page after the redirect:** `/transfer/<tran_id>`. PayWay returns the browser there through `/api/payway/return`.
-5. **Raw callback payload and stored database row.** Run:
-   ```bash
-   pnpm evidence <tran_id>
-   ```
-   This prints the row and the callback exactly as received. The PayWay API key is never stored, so there is nothing to redact. The Supabase Table Editor (`transactions` table) shows the same row.
-6. **Log lines.** In the Vercel dashboard → Logs, search for the transaction ID. Every event is one JSON line:
-   - `payway.purchase.signed`
-   - `payway.callback.received`
-   - `payway.check.request` / `payway.check.response`
-   - `transaction.status_changed`
-   - `payway.return`
-
-If a transaction fails, keep its evidence too: the PayWay response, the status page and the stored row. Write down what happened and what changed.
-
-## Transaction 1: 1 KHR
-
-- Transaction ID:
-- Screenshots: form · PayWay checkout · result page
-- Callback payload:
-- Stored record:
-- Notes:
-
-## Transaction 2: 2,000 KHR
-
-- Transaction ID:
-- Screenshots: form · PayWay checkout · result page
-- Callback payload:
-- Stored record:
-- Notes:
+The account number and demo sender name are redacted in the exported database records. The API key and RSA private key are not included in Git or the evidence package.

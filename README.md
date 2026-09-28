@@ -43,12 +43,23 @@ sequenceDiagram
     participant DB as Supabase
     participant ABA as ABA PayWay
 
-    User->>App: Enter name, account number, amount
+    User->>App: Enter name, account reference, amount
     App->>App: Validate input server-side
     App->>DB: Create pending transaction
-    App->>ABA: Signed PayWay request
-    ABA-->>User: PayWay checkout / QR
-    ABA->>App: Callback
+    App->>ABA: Signed Generate QR request (sandbox)
+    ABA-->>App: ABA-generated KHQR PNG
+    App-->>User: Display QR on site
+    User->>ABA: Scan and authorize in sandbox app
     App->>ABA: Check transaction status
-    App->>DB: Update transaction
-    ABA-->>User: Return to application
+    App->>DB: Update transaction when verified
+```
+
+The deployed sandbox QR flow omits `callback_url` and polls ABA's Check transaction API. The hosted Purchase flow and callback handler remain in the code but are not used by the current QR deployment. The entered account number is a reconciliation reference; the QR collects for the configured ABA merchant.
+
+## Local setup
+
+Install Node 24 and pnpm, then run `pnpm install`. Copy `.env.example` to an ignored `.env.local`, fill in the sandbox merchant ID, API key, and Supabase credentials, and run `pnpm dev`. The database schema is in `supabase/migrations/`. Do not commit real `.env` files. Run `pnpm test` and `pnpm build` to verify the project.
+
+## Evidence and current limits
+
+See [docs/EVIDENCE.md](docs/EVIDENCE.md) and the separate submission evidence package for screenshots, transaction IDs, API responses, and redacted database records. On 28 September 2026, a 1 KHR Generate QR request failed with HTTP 400/code `04` (“The given data was invalid”); a 2,000 KHR request returned an ABA QR and a `PENDING` transaction. No approved payer-app payment was observed. ABA's written domain-whitelist confirmation has not been received.
