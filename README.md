@@ -1,13 +1,15 @@
 # Tovmuk Pay: ABA PayWay integration
 
 A KHR transfer form that takes a payer from **name, account number and amount** to a
-**verified result** through ABA PayWay's hosted checkout.
+**verified result** through ABA PayWay.
 
 - **Live:** https://pay.tovmuksolution.com. This is my own domain, not `khmerfp.com`, and it stays live through Monday 28 September.
 - **Stack:** Next.js 16 (App Router, TypeScript) on Vercel (Singapore, `sin1`), with Supabase Postgres. There is no PayWay SDK; the protocol code is in [`src/lib/payway.ts`](src/lib/payway.ts).
 - **Source of truth:** the official docs at developer.payway.com.kh: Purchase, Check transaction and Ecommerce Checkout ("Verify Callback Signature").
 
 ## Flow
+
+The diagram below shows hosted checkout. Sandbox QR mode calls PayWay's Generate QR API from the server, displays PayWay's QR, and verifies through Check transaction without relying on a callback.
 
 ```mermaid
 sequenceDiagram
@@ -62,6 +64,8 @@ Set `PAYWAY_BASE_URL=http://localhost:4010` in `.env.local`, then:
 pnpm mock                            # mock PayWay on :4010
 pnpm build && pnpm start             # app on :3000 (APP_BASE_URL must match)
 ```
+
+**ABA sandbox QR demo.** Set `PAYWAY_MERCHANT_ID` and `PAYWAY_API_KEY` to the sandbox credentials in the ignored `.env.local`, `PAYWAY_BASE_URL=https://checkout-sandbox.payway.com.kh`, `PAYWAY_SANDBOX_QR=1`, and `APP_BASE_URL` to the app origin. Run `pnpm dev`. ABA's Generate QR API returns the KHQR image and ABA Mobile deep link; the transfer page polls Check transaction. A merchant default callback may still be sent by PayWay if configured in its portal, but this mode does not depend on it. The account number is a reconciliation reference only: PayWay collects into the configured ABA merchant account.
 
 **Deploy:**
 
@@ -155,7 +159,7 @@ Each record stores the transaction ID, name, account number, amount, currency, s
 ## Tests
 
 ```bash
-pnpm test        # 28 unit tests, node:test, no framework
+pnpm test        # 30 unit tests, node:test, no framework
 pnpm typecheck
 pnpm lint
 ```
@@ -176,7 +180,8 @@ The full flow was also run end to end against `test/mock-payway.ts`: pay, declin
 
 ## Known gaps, and what I'd do with two more days
 
-- **1 KHR vs PayWay's minimum.** The Purchase docs list error 47, "KHR amount must be greater than 100 KHR". The form accepts 1 KHR as the exam requires. If the live profile enforces the minimum, PayWay rejects the checkout and the attempt is recorded as `failed` rather than hidden.
+- **ABA PAY sandbox payer authorization.** Generate QR succeeds and Check transaction finds the pending transfer, but the ABA sandbox app reported “transition not found” when scanning an ABA PAY QR. This deployment now uses the documented `abapay_khqr` option. An approved payment still requires a fresh scan in the payer app; if it cannot resolve the transaction, ABA's integration contact must check the merchant and payer sandbox setup.
+- **1 KHR vs PayWay's minimum.** This sandbox merchant rejected 1 KHR with HTTP 403, code 3, "Invalid Transaction Amount." The form accepts 1 KHR as the exam requires, and records PayWay's rejection as `failed`.
 - **Server-to-server whitelisting.** Vercel functions have no fixed egress IP. If PayWay whitelists Check transaction by IP rather than domain, signed callbacks still settle payments, but I would add a static-IP egress.
 - **Rate limiting and bot protection** on the form (Vercel Firewall or BotID).
 - **A scheduled reconciliation sweep** for abandoned `pending` transfers. Today they resolve when viewed or when PayWay calls back.

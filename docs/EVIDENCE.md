@@ -1,6 +1,20 @@
 # Test transaction evidence
 
-Two real transfers, both started from https://pay.tovmuksolution.com (not a script or cURL):
+Local ABA sandbox run on 27 September 2026, with no custom callback:
+
+| Amount | Purchase result | App result |
+| --- | --- | --- |
+| 1 KHR | HTTP 403, code 3: Invalid Transaction Amount | Failed; transaction ID retained for review |
+| 2,000 KHR | HTTP 200, code 00: QR returned | Transaction `TP260927155156Q2VR3U` cancelled after the payment window expired without a payer scan |
+| 2,000 KHR | Purchase API returned QR and ABA Mobile deep link | The ABA sandbox app reported “Invalid QR” for transaction `TP260927161430IHU51S` |
+| 2,000 KHR | Generate QR API returned ABA KHQR (`abapay_khqr`) | Transaction `TP260927163130T2T9T5` generated successfully; payer result not confirmed |
+| 2,000 KHR | Generate QR API returned ABA PAY (`abapay`) | ABA sandbox app reported “transition not found” for `TP2609271634479DTKU5`; PayWay Check transaction returned HTTP 200, code 00, `PENDING`, amount 2,000 KHR |
+
+The app checks status with PayWay's Check transaction API. No approved sandbox payment has been observed. ABA's sandbox payer app needs to recognize the merchant transaction before this can be completed.
+
+## Public-domain capture checklist
+
+Transfers started from https://pay.tovmuksolution.com after ABA confirms the domain whitelist:
 
 | # | Amount | Transaction ID | Result |
 | --- | --- | --- | --- |

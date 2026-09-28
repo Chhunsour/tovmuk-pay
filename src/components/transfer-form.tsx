@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition, type FormEvent, type ReactNode } from "react";
 import { startTransfer, type StartTransferResult } from "@/app/actions";
 import { formatKhr, groupDigits, MAX_AMOUNT_KHR, MIN_AMOUNT_KHR, validateTransfer, type FieldErrors } from "@/lib/transfer";
@@ -58,6 +59,9 @@ export function TransferForm() {
     startTransition(async () => {
       const result = await startTransfer(data).catch(() => null);
       if (!result?.ok) {
+        if (result?.tranId) {
+          try { sessionStorage.setItem(LAST_TRANSFER, result.tranId); } catch { /* status link is optional */ }
+        }
         dialogRef.current?.close();
         setErrors(result?.errors ?? {});
         setNotice(result?.message ?? (result ? "Check the highlighted fields." : "Couldn't reach the server. Nothing was charged. Try again."));
@@ -70,7 +74,7 @@ export function TransferForm() {
         // storage unavailable (private mode): the status page link is only a convenience
       }
       setHandoff(result);
-      setTimeout(() => postToPayWay(result), 900); // long enough to see the transaction ID
+      if (result.mode === "hosted") setTimeout(() => postToPayWay(result), 900); // long enough to see the transaction ID
     });
   }
 
@@ -122,7 +126,7 @@ export function TransferForm() {
           />
         </Step>
 
-        <Step n={2} label="Destination account" htmlFor="accountNumber" error={errors.accountNumber} hint="Numbers only, 6–20 digits">
+        <Step n={2} label="Account reference" htmlFor="accountNumber" error={errors.accountNumber} hint="6–20 digits. The QR pays the configured ABA merchant, not this account.">
           <input
             id="accountNumber"
             name="accountNumber"
@@ -189,7 +193,7 @@ export function TransferForm() {
       >
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <h2 id="confirm-title" className="font-medium">
-            {handoff ? "Redirecting to ABA PayWay" : "Confirm transfer"}
+            {handoff?.mode === "qr" ? "ABA PayWay sandbox QR" : handoff ? "Redirecting to ABA PayWay" : "Confirm transfer"}
           </h2>
           {!handoff && (
             <button
@@ -213,21 +217,31 @@ export function TransferForm() {
           </p>
           <dl className="mt-6 space-y-3 text-sm">
             <Row label="From">{name.trim()}</Row>
-            <Row label="To account">
+            <Row label="Account reference">
               <span className="tabular-nums">{groupDigits(account)}</span>
             </Row>
             <Row label="Network">ABA PayWay</Row>
             <Row label="Transaction ID">{handoff ? <span className="tabular-nums">{handoff.tranId}</span> : <span className="text-muted">Issued on confirm</span>}</Row>
           </dl>
           <p className="mt-5 rounded-lg bg-raised px-3 py-2.5 text-xs leading-5 text-muted">
-            {handoff
+            {handoff?.mode === "qr"
+              ? "Scan this sandbox QR code to pay, then check the transfer status."
+              : handoff
               ? "Transfer recorded and signed. Opening ABA PayWay checkout."
               : "You'll authorize this payment on ABA PayWay. The transfer is recorded before you leave this page."}
           </p>
+          {handoff?.mode === "qr" && (
+            <div className="text-center">
+              <Image src={handoff.qrImage} width={256} height={256} unoptimized alt="ABA PayWay sandbox payment QR code" className="mx-auto mt-4 rounded bg-white p-2" />
+              {handoff.abaDeepLink && <a href={handoff.abaDeepLink} className="btn btn-secondary mt-4 inline-block">Open in ABA Mobile</a>}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 border-t border-line px-5 py-4">
-          {handoff ? (
+          {handoff?.mode === "qr" ? (
+            <Link href={`/transfer/${handoff.tranId}`} className="btn btn-primary w-full text-center">View transfer status</Link>
+          ) : handoff ? (
             <button type="button" className="btn btn-primary w-full" onClick={() => postToPayWay(handoff)}>
               <Spinner /> Continue to ABA PayWay
             </button>
@@ -249,7 +263,7 @@ export function TransferForm() {
 }
 
 /** Submits the server-signed fields to PayWay's hosted checkout (multipart/form-data, per the Purchase API). */
-function postToPayWay({ checkoutUrl, fields }: Handoff) {
+function postToPayWay({ checkoutUrl, fields }: Extract<Handoff, { mode: "hosted" }>) {
   const form = document.createElement("form");
   form.method = "POST";
   form.action = checkoutUrl;
@@ -289,7 +303,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-muted">{label}</dt>
-      <dd className="min-w-0 truncate text-right">{children}</dd>
+      <dd className="min-w-0 break-all text-right">{children}</dd>
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default async function TransferPage({ params }: PageProps<"/transfer/[tra
           </Row>
           <Row label="Amount">{formatKhr(tx.amount)}</Row>
           <Row label="From">{tx.sender_name}</Row>
-          <Row label="To account">
+          <Row label="Account reference">
             <span className="tabular-nums">{maskAccount(tx.account_number)}</span>
           </Row>
           <Row label="Network">ABA PayWay</Row>

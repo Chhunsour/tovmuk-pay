@@ -8,6 +8,7 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 
 export const PURCHASE_PATH = "/api/payment-gateway/v1/payments/purchase";
+export const QR_PATH = "/api/payment-gateway/v1/payments/generate-qr";
 export const CHECK_TRANSACTION_PATH =
   "/api/payment-gateway/v1/payments/check-transaction-2";
 
@@ -72,6 +73,17 @@ export function purchaseHash(
 ): string {
   const b4hash = PURCHASE_HASH_ORDER.map((name) => fields[name] ?? "").join("");
   return hmacSha512Base64(b4hash, apiKey);
+}
+
+/** ABA's QR API signs a different field order from Purchase. */
+export function qrHash(fields: Record<string, string>, apiKey: string): string {
+  const order = [
+    "req_time", "merchant_id", "tran_id", "amount", "items", "first_name", "last_name",
+    "email", "phone", "purchase_type", "payment_option", "callback_url",
+    "return_deeplink", "currency", "custom_fields", "return_params", "payout",
+    "lifetime", "qr_image_template",
+  ];
+  return hmacSha512Base64(order.map((name) => fields[name] ?? "").join(""), apiKey);
 }
 
 export type PurchaseInput = {

@@ -8,6 +8,7 @@ import {
   parseCallbackBody,
   parseCheckResponse,
   purchaseHash,
+  qrHash,
   reqTime,
   TRAN_ID_PATTERN,
   verifyCallbackSignature,
@@ -76,6 +77,18 @@ test("purchase fields carry the exact KHR amount and encoded URLs", () => {
     sender_name: "Sokha Chan",
   });
   assert.equal(buildPurchaseFields({ ...baseInput(), amountKhr: 1 }).amount, "1");
+});
+
+test("sandbox purchase can omit the callback URL and still sign every field", () => {
+  const { hash, ...fields } = buildPurchaseFields({ ...baseInput(), callbackUrl: "" });
+  assert.equal(fields.return_url, "");
+  assert.equal(purchaseHash(fields, KEY), hash);
+});
+
+test("sandbox QR uses ABA's dedicated QR hash order", () => {
+  const fields = { req_time: "20260923050607", merchant_id: "ec000002", tran_id: TRAN, amount: "2000", purchase_type: "purchase", payment_option: "abapay_khqr", currency: "KHR", lifetime: "15", qr_image_template: "template3_color" };
+  assert.equal(qrHash(fields, KEY), "N4cOypsiHZA6MJegQjjlRhCJTeNtTjybLEgXKORNd+vZ6OktyUmm5Lo8mX2LFRYZ024+GbvvrP5S0nLCtglD5w==");
+  assert.notEqual(qrHash({ ...fields, amount: "2001" }, KEY), qrHash(fields, KEY));
 });
 
 test("every signed field is covered: tampering with the amount changes the hash", () => {
