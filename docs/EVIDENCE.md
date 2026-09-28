@@ -12,6 +12,8 @@ Local ABA sandbox run on 27 September 2026, with no custom callback:
 
 The app checks status with PayWay's Check transaction API. No approved sandbox payment has been observed. ABA's sandbox payer app needs to recognize the merchant transaction before this can be completed.
 
+Live-domain check on 28 September 2026: `https://pay.tovmuksolution.com/` generated ABA's `abapay_khqr` PNG for `TP260928011904WVU5M1` (2,000 KHR). The transfer page then showed PayWay status `PENDING (2)` for that transaction. Payer-app authorization has not yet been observed.
+
 ## Public-domain capture checklist
 
 Transfers started from https://pay.tovmuksolution.com after ABA confirms the domain whitelist:
